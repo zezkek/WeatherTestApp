@@ -1,7 +1,9 @@
 ﻿using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
 using WeatherTestApp.Data;
+using WeatherTestApp.Data.Enums;
 using WeatherTestApp.Models;
+using WeatherTestApp.ViewModels;
 
 namespace WeatherTestApp.Controllers
 {
@@ -13,10 +15,31 @@ namespace WeatherTestApp.Controllers
             _appDbContext = appDbContext;
         }
 
-        public IActionResult ViewWeather()
+        public IActionResult ViewWeather(int page = 1, Month curMonth = Month.None)
         {
-            List<WeatherPeriod> weathers = _appDbContext.WeatherPeriods.ToList();
-            return View(weathers);
+            if (curMonth == Month.None)
+            {
+                WeatherViewModel weatherViewModel = new WeatherViewModel
+                {
+                    ItemsPerPage = 20,
+                    Periods = _appDbContext.WeatherPeriods.ToList().OrderBy(m => m.Date).ThenBy(m => m.Time),
+                    CurrentPage = page
+                };
+                weatherViewModel.CalculatePages();
+                return View(weatherViewModel);
+            }
+            else
+            {
+                WeatherViewModel weatherViewModel = new WeatherViewModel
+                {
+                    ItemsPerPage = 20,
+                    Periods = _appDbContext.WeatherPeriods.ToList().Where(w => w.Date.Month == (int)curMonth).OrderBy(m => m.Date).ThenBy(m => m.Time),
+                    CurrentPage = page,
+                    selectedMonth = curMonth
+                };
+                weatherViewModel.CalculatePages();
+                return View(weatherViewModel);
+            }
         }
 
         public IActionResult LoadWeather()
@@ -47,7 +70,7 @@ namespace WeatherTestApp.Controllers
                         {
                             WeatherPeriod weather = new WeatherPeriod()
                             {
-                                Date = rangeRow.Cell(1).Value.ToString(),
+                                Date = DateTime.Parse(rangeRow.Cell(1).Value.ToString()).Date,
                                 Time = rangeRow.Cell(2).Value.ToString(),
                                 Temperature = rangeRow.Cell(3).Value.ToString(),
                                 Humidity = rangeRow.Cell(4).Value.ToString(),

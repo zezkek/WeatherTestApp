@@ -13,7 +13,7 @@ namespace WeatherTestApp.Models
 
         #region Fields
 
-        private string? _date;
+        private DateTime _date;
         private string? _time;
         private string? _temperature;
         private string? _humidity;
@@ -30,7 +30,7 @@ namespace WeatherTestApp.Models
 
         #region Properties
         [DisplayName("Дата")]
-        public string? Date
+        public DateTime Date
         {
             get => _date;
             set => _date = value;
