@@ -10,12 +10,12 @@
             <a class="btn btn-outline-primary dropdown-toggle" href="" role="button" data-bs-toggle="dropdown" aria-expanded="false">@(Model.SelectedYear == -1 ? "Select year" : Model.SelectedYear)</a>
 
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="@Url.Action("ViewWeather", new { curMonth = Model.SelectedMonth, page = Model.CurrentPage, selectedYear = -1 })">None</a></li>
+                <li><a class="dropdown-item" asp-action="ViewWeather" asp-route-page="@Model.CurrentPage" asp-route-curMonth="@Model.SelectedMonth" asp-route-selectedYear="-1">None</a></li>
                 @foreach (int year in Model.IncludedYears)
                 {
                     if (year != Model.SelectedYear)
                     {
-                        <li><a class="dropdown-item" href="@Url.Action("ViewWeather", new { curMonth = Model.SelectedMonth, page = Model.CurrentPage, selectedYear = year })">@year</a></li>
+                        <li><a class="dropdown-item" asp-action="ViewWeather" asp-route-page="@Model.CurrentPage" asp-route-curMonth="@Model.SelectedMonth" asp-route-selectedYear="@year">@year</a></li>
                     }
                 }
             </ul>
@@ -28,7 +28,7 @@
                 {
                     if (month != Model.SelectedMonth)
                     {
-                        <li><a class="dropdown-item" href="@Url.Action("ViewWeather", new { curMonth = month, page = Model.CurrentPage, selectedYear = Model.SelectedYear })">@month</a></li>
+                        <li><a class="dropdown-item" asp-action="ViewWeather" asp-route-page="@Model.CurrentPage" asp-route-curMonth = "@month" asp-route-selectedYear="@Model.SelectedYear">@month</a></li>
                     }
                 }
             </ul>
@@ -76,7 +76,7 @@
     <div class="col-sm-12">
         @for (int i = Model.StartPage; i <= Model.EndPage; i++)
         {
-            <a href="@Url.Action("ViewWeather", new { page = i, curMonth = Model.SelectedMonth, selectedYear = Model.SelectedYear })" class="btn @(i == Model.CurrentPage ? "btn-primary" : "btn-outline-primary")">@i</a>
+            <a asp-action="ViewWeather" asp-route-page="@i" asp-route-curMonth="@Model.SelectedMonth" asp-route-selectedYear="@Model.SelectedYear" class="btn @(i == Model.CurrentPage ? "btn-primary" : "btn-outline-primary")">@i</a>
         }
     </div>
 </div>
