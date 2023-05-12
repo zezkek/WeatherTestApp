@@ -3,64 +3,80 @@
 
 @{
     ViewData["Title"] = "Архив погоды";
-    //var modelOrdered = Model.OrderBy(m => m.Date).ThenBy(m => m.Time);
 }
-<div>
-    <div class="dropdown">
-        <a class="btn btn-outline-primary dropdown-toggle" href="" role="button" data-bs-toggle="dropdown" aria-expanded="false">@Model.selectedMonth</a>
+<div class="row">
+    <div class="row g-3 align-items-center">
+        <div class="col-auto dropdown">
+            <a class="btn btn-outline-primary dropdown-toggle" href="" role="button" data-bs-toggle="dropdown" aria-expanded="false">@(Model.SelectedYear == -1 ? "Select year" : Model.SelectedYear)</a>
 
-        <ul class="dropdown-menu">
-            @foreach (Month month in Enum.GetValues(typeof(Month)))
-            {
-                if (month != Model.selectedMonth)
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="@Url.Action("ViewWeather", new { curMonth = Model.SelectedMonth, page = Model.CurrentPage, selectedYear = -1 })">None</a></li>
+                @foreach (int year in Model.IncludedYears)
                 {
-                    <li><a class="dropdown-item" href="@Url.Action("ViewWeather", new { curMonth = month, page = Model.CurrentPage })">@month</a></li>
+                    if (year != Model.SelectedYear)
+                    {
+                        <li><a class="dropdown-item" href="@Url.Action("ViewWeather", new { curMonth = Model.SelectedMonth, page = Model.CurrentPage, selectedYear = year })">@year</a></li>
+                    }
                 }
-            }
-        </ul>
-    </div>
+            </ul>
+        </div>
+        <div class="col-auto dropdown">
+            <a class="btn btn-outline-primary dropdown-toggle" href="" role="button" data-bs-toggle="dropdown" aria-expanded="false">@(Model.SelectedMonth == Month.None ? "Select month" : Model.SelectedMonth)</a>
 
-    <table class="table table-hover" data-page-list="[10, 25, 50, 100, all]">
-        <thead>
-            <tr>
-                <th scope="col">Дата</th>
-                <th scope="col">Время</th>
-                <th scope="col">Температура</th>
-                <th scope="col">Влажность воздуха %</th>
-                <th scope="col">Точка росы</th>
-                <th scope="col">Давление мм рт.ст.</th>
-                <th scope="col">Направление ветра</th>
-                <th scope="col">Скорость ветра</th>
-                <th scope="col">Облачность %</th>
-                <th scope="col">Нижняя граница облачности</th>
-                <th scope="col">Горизональная видимость</th>
-                <th scope="col">Погодные явления</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (WeatherPeriod weatherPeriod in Model.PaginatedPeriods())
-            {
+            <ul class="dropdown-menu">
+                @foreach (Month month in Enum.GetValues(typeof(Month)))
+                {
+                    if (month != Model.SelectedMonth)
+                    {
+                        <li><a class="dropdown-item" href="@Url.Action("ViewWeather", new { curMonth = month, page = Model.CurrentPage, selectedYear = Model.SelectedYear })">@month</a></li>
+                    }
+                }
+            </ul>
+        </div>
+    </div>
+    <div class="col-sm-12">
+        <table class="table table-hover" data-page-list="[10, 25, 50, 100, all]">
+            <thead>
                 <tr>
-                    <th scope="row">@weatherPeriod.Date.ToString("dd/MM/yyyy/")</th>
-                    <td>@weatherPeriod.Time</td>
-                    <td>@weatherPeriod.Temperature</td>
-                    <td>@weatherPeriod.Humidity</td>
-                    <td>@weatherPeriod.Dew</td>
-                    <td>@weatherPeriod.Pressure</td>
-                    <td>@weatherPeriod.WindDirection</td>
-                    <td>@weatherPeriod.WindSpeed</td>
-                    <td>@weatherPeriod.Cloudiness</td>
-                    <td>@weatherPeriod.CloudBase</td>
-                    <td>@weatherPeriod.HorizontalVisibility</td>
-                    <td>@weatherPeriod.WeatherConditions</td>
+                    <th scope="col">Дата</th>
+                    <th scope="col">Время</th>
+                    <th scope="col">Температура</th>
+                    <th scope="col">Влажность воздуха %</th>
+                    <th scope="col">Точка росы</th>
+                    <th scope="col">Давление мм рт.ст.</th>
+                    <th scope="col">Направление ветра</th>
+                    <th scope="col">Скорость ветра</th>
+                    <th scope="col">Облачность %</th>
+                    <th scope="col">Нижняя граница облачности</th>
+                    <th scope="col">Горизональная видимость</th>
+                    <th scope="col">Погодные явления</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-</div>
-<div>
-    @for (int i = Model.StartPage; i <= Model.EndPage; i++)
-    {
-        <a href="@Url.Action("ViewWeather", new { page = i, curMonth = Model.selectedMonth })" class="btn @(i == Model.CurrentPage ? "btn-primary" : "btn-outline-primary")">@i</a>
-    }
+            </thead>
+            <tbody>
+                @foreach (WeatherPeriod weatherPeriod in Model.PaginatedPeriods())
+                {
+                    <tr>
+                        <th scope="row">@weatherPeriod.Date.ToString("dd/MM/yyyy/")</th>
+                        <td>@weatherPeriod.Time</td>
+                        <td>@weatherPeriod.Temperature</td>
+                        <td>@weatherPeriod.Humidity</td>
+                        <td>@weatherPeriod.Dew</td>
+                        <td>@weatherPeriod.Pressure</td>
+                        <td>@weatherPeriod.WindDirection</td>
+                        <td>@weatherPeriod.WindSpeed</td>
+                        <td>@weatherPeriod.Cloudiness</td>
+                        <td>@weatherPeriod.CloudBase</td>
+                        <td>@weatherPeriod.HorizontalVisibility</td>
+                        <td>@weatherPeriod.WeatherConditions</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="col-sm-12">
+        @for (int i = Model.StartPage; i <= Model.EndPage; i++)
+        {
+            <a href="@Url.Action("ViewWeather", new { page = i, curMonth = Model.SelectedMonth, selectedYear = Model.SelectedYear })" class="btn @(i == Model.CurrentPage ? "btn-primary" : "btn-outline-primary")">@i</a>
+        }
+    </div>
 </div>

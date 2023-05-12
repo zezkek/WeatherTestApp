@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using Microsoft.AspNetCore.Mvc;
 using WeatherTestApp.Data;
 using WeatherTestApp.Data.Enums;
@@ -7,39 +8,54 @@ using WeatherTestApp.ViewModels;
 
 namespace WeatherTestApp.Controllers
 {
+    /// <summary>
+    /// Контроллер страниц загрузки и просмотра данных о погоде
+    /// </summary>
     public class WeatherPeriodController : Controller
     {
         private AppDbContext _appDbContext;
+        private WeatherViewModel weatherViewModel;
         public WeatherPeriodController(AppDbContext appDbContext)
         {
             _appDbContext = appDbContext;
+            weatherViewModel = new WeatherViewModel
+            {
+                ItemsPerPage = 20,
+                Periods = _appDbContext.WeatherPeriods.ToList().OrderBy(m => m.Date).ThenBy(m => m.Time),
+                CurrentPage = 1,
+                SelectedMonth = Month.None
+            };
         }
 
-        public IActionResult ViewWeather(int page = 1, Month curMonth = Month.None)
+        #region Methods
+
+        /// <summary>
+        /// Отфильтровывает таблицу по заданным параметрам
+        /// </summary>
+        /// <param name="page">Номер текущей страницы</param>
+        /// <param name="curMonth">Выбранный месяц</param>
+        /// <param name="selectedYear">Выбранный год</param>
+        public IActionResult ViewWeather(int page = 1, Month curMonth = Month.None, int selectedYear = -1)
         {
+
             if (curMonth == Month.None)
-            {
-                WeatherViewModel weatherViewModel = new WeatherViewModel
-                {
-                    ItemsPerPage = 20,
-                    Periods = _appDbContext.WeatherPeriods.ToList().OrderBy(m => m.Date).ThenBy(m => m.Time),
-                    CurrentPage = page
-                };
-                weatherViewModel.CalculatePages();
-                return View(weatherViewModel);
-            }
+                weatherViewModel.Periods = _appDbContext.WeatherPeriods.ToList().OrderBy(m => m.Date).ThenBy(m => m.Time);
             else
+                weatherViewModel.Periods = _appDbContext.WeatherPeriods.ToList().Where(w => w.Date.Month == (int)curMonth).OrderBy(m => m.Date).ThenBy(m => m.Time);
+
+            weatherViewModel.IncludedYears = IncludedYears();
+
+            if (selectedYear != -1)
             {
-                WeatherViewModel weatherViewModel = new WeatherViewModel
-                {
-                    ItemsPerPage = 20,
-                    Periods = _appDbContext.WeatherPeriods.ToList().Where(w => w.Date.Month == (int)curMonth).OrderBy(m => m.Date).ThenBy(m => m.Time),
-                    CurrentPage = page,
-                    selectedMonth = curMonth
-                };
-                weatherViewModel.CalculatePages();
-                return View(weatherViewModel);
+                weatherViewModel.Periods = weatherViewModel.Periods.Where(y => y.Date.Year == selectedYear);
             }
+
+            weatherViewModel.SelectedYear = selectedYear;
+            weatherViewModel.CurrentPage = page;
+            weatherViewModel.SelectedMonth = curMonth;
+
+            weatherViewModel.CalculatePages();
+            return View(weatherViewModel);
         }
 
         public IActionResult LoadWeather()
@@ -47,14 +63,13 @@ namespace WeatherTestApp.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Проверяет на корректность загруженные таблицы, сохраняет данные в БД и переадресовывает на страницу просмотра данных
+        /// </summary>
+        /// <param name="files">Загруженные файлы</param>
         [HttpPost]
         public async Task<IActionResult> LoadFile(ICollection<IFormFile> files)
         {
-            if (files.Count == 0)
-            {
-
-            }
-
             foreach (IFormFile file in files)
             {
                 XLWorkbook xLWorkbook = new XLWorkbook(file.OpenReadStream());
@@ -95,5 +110,22 @@ namespace WeatherTestApp.Controllers
             }
             return RedirectToAction("ViewWeather");
         }
+
+        /// <summary>
+        /// Высчитывает года, которые присутствуют в таблице погод
+        /// </summary>
+        /// <returns>Массив годов</returns>
+        public List<int> IncludedYears()
+        {
+            List<int> years = new List<int>();
+            foreach (WeatherPeriod weatherPeriod in _appDbContext.WeatherPeriods.ToList())
+            {
+                if (!years.Contains(weatherPeriod.Date.Year))
+                    years.Add(weatherPeriod.Date.Year);
+            }
+            return years;
+        }
+
+        #endregion
     }
 }

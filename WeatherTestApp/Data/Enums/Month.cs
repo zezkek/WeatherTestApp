@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace WeatherTestApp.Data.Enums
 {
+    /// <summary>
+    /// Месяца
+    /// </summary>
     public enum Month
     {
         None,

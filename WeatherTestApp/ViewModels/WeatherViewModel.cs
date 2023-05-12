@@ -5,19 +5,38 @@ using WeatherTestApp.Models;
 
 namespace WeatherTestApp.ViewModels
 {
+    /// <summary>
+    /// ViewModel для архива погод
+    /// </summary>
     public class WeatherViewModel
     {
+        #region Properties
+
         public IEnumerable<WeatherPeriod> Periods { get; set; }
+        public IEnumerable<int> IncludedYears { get; set; }
         public int ItemsPerPage { get; set; }
         public int CurrentPage { get; set; }
         public int StartPage { get; set; }
         public int EndPage { get; set; }
-        public Month selectedMonth { get; set; } = Month.None;
+        public int SelectedYear { get; set; }
+        public Month SelectedMonth { get; set; } = Month.None;
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Вычисляет общее количество страниц с заданными параметрами
+        /// </summary>
+        /// <returns>Общее кол-во страниц</returns>
         public int TotalPages()
         {
             return (int)Math.Ceiling(Periods.Count() / (double)ItemsPerPage);
         }
 
+        /// <summary>
+        /// Вычисляет начальную и конечную позиции страниц навигации
+        /// </summary>
         public void CalculatePages()
         {
             StartPage = CurrentPage - 5;
@@ -39,10 +58,16 @@ namespace WeatherTestApp.ViewModels
             }
         }
 
+        /// <summary>
+        /// Вычисляет каике элементы должны выводиться пользователю
+        /// </summary>
+        /// <returns>Массив записей погод</returns>
         public IEnumerable<WeatherPeriod> PaginatedPeriods()
         {
             int start = (CurrentPage - 1) * ItemsPerPage;
             return Periods.OrderBy(b => b.Date).Skip(start).Take(ItemsPerPage);
         }
+
+        #endregion
     }
 }
